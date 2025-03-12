@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/rehan-adi/go-auth-service/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -30,5 +31,14 @@ func ConnectDB() {
 
 	fmt.Println("✅ Database connected successfully")
 	DB = db
+
+	// Auto Migrate the Model
+	err = DB.AutoMigrate(&models.User{})
+
+	if err != nil {
+		log.Fatal("❌ Failed to migrate the database:", err)
+	}
+
+	fmt.Println("✅ Database migrated successfully")
 
 }
