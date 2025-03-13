@@ -2,10 +2,10 @@ package database
 
 import (
 	"fmt"
-	"log"
-	"os"
 
+	"github.com/rehan-adi/go-auth-service/config"
 	"github.com/rehan-adi/go-auth-service/internal/models"
+	"github.com/rehan-adi/go-auth-service/internal/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -16,30 +16,30 @@ func ConnectDB() {
 
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_PORT"),
+		config.Config.DB_HOST,
+		config.Config.DB_USER,
+		config.Config.DB_PASSWORD,
+		config.Config.DB_NAME,
+		config.Config.DB_PORT,
 	)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
-		log.Fatal("❌ Failed to connect to the database:", err)
+		utils.Log.Fatalf("❌ Failed to connect to the database: %v", err)
 	}
 
-	fmt.Println("✅ Database connected successfully")
+	utils.Log.Info("✅ Database connected successfully")
+
 	DB = db
 
 	// Auto Migrate the Model
 	if !DB.Migrator().HasTable(&models.User{}) {
 		err = DB.AutoMigrate(&models.User{})
 		if err != nil {
-			log.Fatal("❌ Failed to migrate the database:", err)
-
+			utils.Log.Fatalf("❌ Failed to migrate the database: %v", err)
 		}
-		fmt.Println("✅ Database migrated successfaully")
+		utils.Log.Info("✅ Database migrated successfully")
 	}
 
 }
