@@ -5,7 +5,6 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/rehan-adi/go-auth-service/config"
 	"github.com/rehan-adi/go-auth-service/internal/database"
 	"github.com/rehan-adi/go-auth-service/internal/routes"
@@ -13,14 +12,12 @@ import (
 )
 
 func main() {
-	// Load environment variables
-	err := godotenv.Load()
-	if err != nil {
-		utils.Log.Fatal("Error loading .env file")
-	}
 
 	// Initialize logger
 	utils.InitLogger()
+
+	// Load environment variables
+	config.Init()
 
 	// Initialize Gin server
 	server := gin.Default()
@@ -40,7 +37,7 @@ func main() {
 	// Routes
 	routes.HealthRouter(server)
 
-	utils.Log.Infof("🚀 Server running on port %s", config.Config.Port)
-	server.Run(":" + config.Config.Port)
+	utils.Log.Infof("🚀 Server running on port %s", config.Port)
+	server.Run(":" + config.Port)
 
 }
