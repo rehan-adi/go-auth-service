@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/rehan-adi/go-auth-service/internal/utils"
 )
 
 var (
@@ -14,6 +13,7 @@ var (
 	DB_USER     string
 	DB_NAME     string
 	DB_PASSWORD string
+	JWT_SECRET  string
 )
 
 func Init() {
@@ -21,7 +21,7 @@ func Init() {
 	err := godotenv.Load()
 
 	if err != nil {
-		utils.Log.Fatalf("Error loading .env file: %v", err)
+		panic("Error loading .env file")
 	}
 
 	Port = os.Getenv("PORT")
@@ -30,6 +30,6 @@ func Init() {
 	DB_USER = os.Getenv("DB_USER")
 	DB_NAME = os.Getenv("DB_NAME")
 	DB_PASSWORD = os.Getenv("DB_PASSWORD")
+	JWT_SECRET = os.Getenv("JWT_SECRET")
 
-	utils.Log.Info("✅ Environment variables loaded successfully")
 }

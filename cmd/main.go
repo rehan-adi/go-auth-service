@@ -18,6 +18,7 @@ func main() {
 
 	// Load environment variables
 	config.Init()
+	utils.Log.Info("✅ Environment variables loaded successfully")
 
 	// Initialize Gin server
 	server := gin.Default()
