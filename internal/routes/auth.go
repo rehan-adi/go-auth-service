@@ -5,7 +5,10 @@ import (
 	"github.com/rehan-adi/go-auth-service/internal/handlers"
 )
 
-func AuthRouter(router *gin.Engine) {
-	router.POST("/api/v1/auth/signup", handlers.Signup)
-	router.POST("/api/v1/auth/signin", handlers.Signin)
+func AuthRouter(router *gin.RouterGroup) {
+	auth := router.Group("/auth")
+	{
+		auth.POST("/signup", handlers.Signup)
+		auth.POST("/signin", handlers.Signin)
+	}
 }

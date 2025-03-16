@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -35,11 +36,16 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
+	api := server.Group("/api/v1")
+
 	// Routes
-	routes.HealthRouter(server)
-	routes.AuthRouter(server)
+	routes.HealthRouter(api)
+	routes.AuthRouter(api)
 
 	utils.Log.Infof("🚀 Server running on port %s", config.Port)
-	server.Run(":" + config.Port)
+
+	if err := server.Run(":" + config.Port); err != nil {
+		log.Fatalf("❌ Failed to start server: %v", err)
+	}
 
 }
