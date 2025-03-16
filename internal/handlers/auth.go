@@ -101,3 +101,8 @@ func Signin(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"success": true, "data": token, "message": "Login successful"})
 
 }
+
+func Logout(ctx *gin.Context) {
+	ctx.SetCookie("token", "", -1, "/", "", true, false)
+	ctx.JSON(http.StatusOK, gin.H{"success": true, "message": "Logged out successfully"})
+}
