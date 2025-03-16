@@ -4,9 +4,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-    "github.com/rehan-adi/go-auth-service/config"
+	"github.com/rehan-adi/go-auth-service/config"
 )
-
 
 func GenerateToken(userID int, email string) (string, error) {
 
@@ -16,7 +15,7 @@ func GenerateToken(userID int, email string) (string, error) {
 		"exp":     time.Now().Add(time.Hour * 24).Unix(), // Expires in 24 hours
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, payload)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
 	return token.SignedString([]byte(config.JWT_SECRET))
 
 }
