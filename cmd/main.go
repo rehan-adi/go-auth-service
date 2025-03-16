@@ -41,6 +41,7 @@ func main() {
 	// Routes
 	routes.HealthRouter(api)
 	routes.AuthRouter(api)
+	routes.UserRouter(api)
 
 	utils.Log.Infof("🚀 Server running on port %s", config.Port)
 
