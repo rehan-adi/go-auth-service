@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rehan-adi/go-auth-service/internal/database"
@@ -15,27 +16,31 @@ func Signup(ctx *gin.Context) {
 	var data validators.SignupValidator
 
 	if err := ctx.ShouldBindJSON(&data); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Invalid request format"})
 		return
 	}
 
-	errors := validators.ValidateSignupData(data)
+	data.Email = strings.TrimSpace(strings.ToLower(data.Email))
+	data.Username = strings.TrimSpace(data.Username)
 
-	if len(errors) > 0 {
-		ctx.JSON(http.StatusBadRequest, gin.H{"validation errors": errors})
+	validationErrors := validators.ValidateSignupData(data)
+
+	if len(validationErrors) > 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"success": false, "validation_error": validationErrors})
 		return
 	}
 
 	var existingUser models.User
+
 	if err := database.DB.Where("email = ?", data.Email).First(&existingUser).Error; err == nil {
-		ctx.JSON(http.StatusConflict, gin.H{"error": "User already exists"})
+		ctx.JSON(http.StatusConflict, gin.H{"success": false, "error": "User already exists"})
 		return
 	}
 
 	hashpassword, err := utils.HashPassword(data.Password)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error hashing password"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Error hashing password"})
 		return
 	}
 
@@ -46,11 +51,11 @@ func Signup(ctx *gin.Context) {
 	}
 
 	if err := database.DB.Create(&user).Error; err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Failed to create user"})
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"message": "User registered successfully"})
+	ctx.JSON(http.StatusCreated, gin.H{"success": true, "message": "User registered successfully"})
 
 }
 
