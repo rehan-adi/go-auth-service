@@ -8,6 +8,7 @@ import (
 
 func HealthCheck(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": "OK",
+		"success": true,
+		"message": "Server is up and running",
 	})
 }
