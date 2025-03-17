@@ -1,4 +1,4 @@
-package middleware
+package middlewares
 
 import (
 	"net/http"
@@ -56,7 +56,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		// Store in context for later use in routes
-		ctx.Set("userId", int(userID)) // Convert float64 to int
+		ctx.Set("id", int(userID)) // Convert float64 to int
 		ctx.Set("email", email)
 
 		// Continue request processing
