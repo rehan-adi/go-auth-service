@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -8,6 +9,7 @@ import (
 	"github.com/rehan-adi/go-auth-service/internal/dto"
 	"github.com/rehan-adi/go-auth-service/internal/models"
 	"github.com/rehan-adi/go-auth-service/internal/utils"
+	"github.com/rehan-adi/go-auth-service/internal/validators"
 )
 
 func GetAllUsers(ctx *gin.Context) {
@@ -69,6 +71,53 @@ func GetUserById(ctx *gin.Context) {
 		"success": true,
 		"data":    usersResponse,
 		"message": "User retrieved successfully",
+	})
+
+}
+
+func UpdateUser(ctx *gin.Context) {
+
+	id, exists := ctx.Get("id")
+	fmt.Println(id)
+
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"error":   "Unauthorized: User ID not found",
+		})
+		return
+	}
+
+	var data validators.UpdateUserRequest
+
+	if err := ctx.ShouldBindJSON(&data); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error":   "Invalid input: Name is required (3-50 characters)",
+		})
+		return
+	}
+
+	validationErrors := validators.ValidateUpdateUserData(data)
+	if len(validationErrors) > 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"errors":  validationErrors,
+		})
+		return
+	}
+
+	if err := database.DB.Model(&models.User{}).Where("id = ?", id).Update("username", data.Username).Error; err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error":   "Failed to update user name",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "User name updated successfully",
 	})
 
 }
