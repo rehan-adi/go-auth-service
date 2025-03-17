@@ -11,9 +11,10 @@ import (
 
 func GetAllUsers(ctx *gin.Context) {
 
-	var users []dto.UserDataResponse
+	var users []models.User
+	var usersResponse []dto.UserDataResponse
 
-	if err := database.DB.Model(&models.User{}).Select("id, username, email, created").Find(&users).Error; err != nil {
+	if err := database.DB.Select("id, username, email, created").Find(&users).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"error":   "Failed to retrieve users",
@@ -21,9 +22,18 @@ func GetAllUsers(ctx *gin.Context) {
 		return
 	}
 
+	for _, user := range users {
+		usersResponse = append(usersResponse, dto.UserDataResponse{
+			ID:       user.ID,
+			Email:    user.Email,
+			Username: user.Username,
+			Created:  user.Created.Format("2006-01-02 15:04:05"),
+		})
+	}
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"data":    users,
+		"data":    usersResponse,
 		"message": "All users retrieved successfully",
 	})
 
