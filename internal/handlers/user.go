@@ -105,10 +105,30 @@ func UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	if err := database.DB.Model(&models.User{}).Where("id = ?", id).Update("username", data.Username).Error; err != nil {
+	var user models.User
+
+	if err := database.DB.Where("id = ?", id).First(&user).Error; err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"error":   "User not found",
+		})
+		return
+	}
+
+	result := database.DB.Model(&user).Update("username", data.Username)
+
+	if result.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"error":   "Failed to update user name",
+			"error":   "Failed to update user details",
+		})
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"error":   "No changes made to user",
 		})
 		return
 	}
@@ -151,7 +171,7 @@ func DeleteUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
-		"success":  true,
+		"success": true,
 		"message": "User deleted successfully",
 	})
 
