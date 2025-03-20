@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -78,7 +77,6 @@ func GetUserById(ctx *gin.Context) {
 func UpdateUser(ctx *gin.Context) {
 
 	id, exists := ctx.Get("id")
-	fmt.Println(id)
 
 	if !exists {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
@@ -118,6 +116,43 @@ func UpdateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "User name updated successfully",
+	})
+
+}
+
+func DeleteUser(ctx *gin.Context) {
+
+	id, exists := ctx.Get("id")
+
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"error":   "Unauthorized: User ID not found",
+		})
+		return
+	}
+
+	result := database.DB.Delete(&models.User{}, "id = ?", id)
+
+	if result.Error != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error":   "Failed to delete user",
+		})
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"error":   "User not found",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"success":  true,
+		"message": "User deleted successfully",
 	})
 
 }
