@@ -16,7 +16,11 @@ func Signup(ctx *gin.Context) {
 	var data validators.SignupValidator
 
 	if err := ctx.ShouldBindJSON(&data); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Invalid request format"})
+		utils.Log.Errorf("Failed to bind request body: %v", err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error":   "Invalid request format",
+		})
 		return
 	}
 
@@ -26,21 +30,21 @@ func Signup(ctx *gin.Context) {
 	validationErrors := validators.ValidateSignupData(data)
 
 	if len(validationErrors) > 0 {
-		ctx.JSON(http.StatusBadRequest, gin.H{"success": false, "validation_error": validationErrors})
-		return
-	}
-
-	var existingUser models.User
-
-	if err := database.DB.Where("email = ?", data.Email).First(&existingUser).Error; err == nil {
-		ctx.JSON(http.StatusConflict, gin.H{"success": false, "error": "User already exists"})
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"success":          false,
+			"validation_error": validationErrors,
+		})
 		return
 	}
 
 	hashpassword, err := utils.HashPassword(data.Password)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Error hashing password"})
+		utils.Log.Errorf("Error hashing password: %v", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error":   "Error hashing password",
+		})
 		return
 	}
 
@@ -50,12 +54,29 @@ func Signup(ctx *gin.Context) {
 		Password: string(hashpassword),
 	}
 
-	if err := database.DB.Create(&user).Error; err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Failed to create user"})
+	result := database.DB.Where("email = ?", user.Email).FirstOrCreate(&user)
+
+	if result.Error != nil {
+		utils.Log.Errorf("Failed to create user: %v", result.Error)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error":   "Failed to register user",
+		})
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"success": true, "message": "User registered successfully"})
+	if result.RowsAffected == 0 {
+		ctx.JSON(http.StatusConflict, gin.H{
+			"success": false,
+			"error":   "User already exists",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, gin.H{
+		"success": true,
+		"message": "User registered successfully",
+	})
 
 }
 
@@ -64,45 +85,72 @@ func Signin(ctx *gin.Context) {
 	var data validators.SigninValidator
 
 	if err := ctx.ShouldBindJSON(&data); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Invalid request format"})
+		utils.Log.Errorf("Failed to bind request body: %v", err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error":   "Invalid request format",
+		})
 		return
 	}
+
+	data.Email = strings.TrimSpace(strings.ToLower(data.Email))
 
 	validationErrors := validators.ValidateSigninData(data)
 
 	if len(validationErrors) > 0 {
-		ctx.JSON(http.StatusBadRequest, gin.H{"success": false, "validation_error": validationErrors})
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"success":          false,
+			"validation_error": validationErrors,
+		})
 		return
 	}
 
 	var user models.User
 
 	if err := database.DB.Where("email = ?", data.Email).First(&user).Error; err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"success": false, "error": "User not found"})
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"error":   "User not found",
+		})
 		return
 	}
 
 	isValid := utils.VerifyPassword(data.Password, user.Password)
 
 	if !isValid {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"success": false, "error": "Invalid credentials"})
+		utils.Log.Error("Password is not valid")
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"error":   "Password is not valid",
+		})
 		return
 	}
 
 	token, err := utils.GenerateToken(user.ID, user.Email)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Could not generate token"})
+		utils.Log.Error("Could not generate token")
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error":   "Could not generate token",
+		})
 		return
 	}
 
-	ctx.SetCookie("token", token, 86400, "/", "", true, false)
+	ctx.SetCookie("token", token, 86400, "/", "", true, true)
 
-	ctx.JSON(http.StatusOK, gin.H{"success": true, "data": token, "message": "Login successful"})
+	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    token,
+		"message": "Login successful",
+	})
 
 }
 
 func Logout(ctx *gin.Context) {
-	ctx.SetCookie("token", "", -1, "/", "", true, false)
-	ctx.JSON(http.StatusOK, gin.H{"success": true, "message": "Logged out successfully"})
+	ctx.SetCookie("token", "", -1, "/", "", true, true)
+	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Logged out successfully",
+	})
 }
