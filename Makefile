@@ -10,5 +10,8 @@ build:
 run: build
 	./$(BUILD_DIR)/$(APP_NAME)
 
+migrate:
+	go run internal/migration/migration.go
+
 clean:
 	rm -rf $(BUILD_DIR)
