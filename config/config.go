@@ -6,7 +6,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var (
+type Config struct {
 	Port        string
 	DB_PORT     string
 	DB_HOST     string
@@ -14,7 +14,9 @@ var (
 	DB_NAME     string
 	DB_PASSWORD string
 	JWT_SECRET  string
-)
+}
+
+var AppConfig Config
 
 func Init() {
 
@@ -24,12 +26,14 @@ func Init() {
 		panic("Error loading .env file")
 	}
 
-	Port = os.Getenv("PORT")
-	DB_PORT = os.Getenv("DB_PORT")
-	DB_HOST = os.Getenv("DB_HOST")
-	DB_USER = os.Getenv("DB_USER")
-	DB_NAME = os.Getenv("DB_NAME")
-	DB_PASSWORD = os.Getenv("DB_PASSWORD")
-	JWT_SECRET = os.Getenv("JWT_SECRET")
+	AppConfig = Config{
+		Port:        os.Getenv("PORT"),
+		DB_PORT:     os.Getenv("DB_PORT"),
+		DB_HOST:     os.Getenv("DB_HOST"),
+		DB_USER:     os.Getenv("DB_USER"),
+		DB_NAME:     os.Getenv("DB_NAME"),
+		DB_PASSWORD: os.Getenv("DB_PASSWORD"),
+		JWT_SECRET:  os.Getenv("JWT_SECRET"),
+	}
 
 }
