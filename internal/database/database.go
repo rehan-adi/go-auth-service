@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/rehan-adi/go-auth-service/config"
 	"github.com/rehan-adi/go-auth-service/internal/utils"
@@ -16,11 +17,11 @@ func ConnectDB() {
 
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		config.DB_HOST,
-		config.DB_USER,
-		config.DB_PASSWORD,
-		config.DB_NAME,
-		config.DB_PORT,
+		config.AppConfig.DB_HOST,
+		config.AppConfig.DB_USER,
+		config.AppConfig.DB_PASSWORD,
+		config.AppConfig.DB_NAME,
+		config.AppConfig.DB_PORT,
 	)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
@@ -30,6 +31,16 @@ func ConnectDB() {
 	if err != nil {
 		utils.Log.Fatalf("❌ Failed to connect to the database: %v", err)
 	}
+
+	sqlDB, err := db.DB()
+
+	if err != nil {
+		utils.Log.Fatalf("❌ Failed to get SQL database instance: %v", err)
+	}
+
+	sqlDB.SetMaxOpenConns(25)
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetConnMaxLifetime(5 * time.Minute)
 
 	utils.Log.Info("✅ Database connected successfully")
 
