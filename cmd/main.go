@@ -43,9 +43,9 @@ func main() {
 	routes.AuthRouter(api)
 	routes.UserRouter(api)
 
-	utils.Log.Infof("🚀 Server running on port %s", config.Port)
+	utils.Log.Infof("🚀 Server running on port %s", config.AppConfig.Port)
 
-	if err := server.Run(":" + config.Port); err != nil {
+	if err := server.Run(":" + config.AppConfig.Port); err != nil {
 		log.Fatalf("❌ Failed to start server: %v", err)
 	}
 

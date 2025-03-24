@@ -17,7 +17,7 @@ func GenerateToken(userID int, email string) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
-	return token.SignedString([]byte(config.JWT_SECRET))
+	return token.SignedString([]byte(config.AppConfig.JWT_SECRET))
 
 }
 
@@ -28,7 +28,7 @@ func VerifyToken(tokenString string) (jwt.MapClaims, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid token signing method")
 		}
-		return []byte(config.JWT_SECRET), nil
+		return []byte(config.AppConfig.JWT_SECRET), nil
 	})
 
 	if err != nil {
