@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +17,7 @@ func GetAllUsers(ctx *gin.Context) {
 	var users []models.User
 	var usersResponse []dto.UserDataResponse
 
-	if err := database.DB.Select("id, username, email, created").
+	if err := database.DB.Select("id, username, email, created_at").
 		Find(&users).Error; err != nil {
 		utils.Log.Errorf("Failed to retrieve users: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -31,7 +32,7 @@ func GetAllUsers(ctx *gin.Context) {
 			ID:       user.ID,
 			Email:    user.Email,
 			Username: user.Username,
-			Created:  user.Created.Format("2006-01-02 15:04:05"),
+			Created:  user.CreatedAt.Format("2006-01-02 15:04:05"),
 		})
 	}
 
@@ -49,7 +50,7 @@ func GetUserById(ctx *gin.Context) {
 
 	id := ctx.Param("id")
 
-	if err := database.DB.Select("id, email, username, created").Where("id = ?", id).
+	if err := database.DB.Select("id, email, username, created_at").Where("id = ?", id).
 		First(&user).Error; err != nil {
 		utils.Log.Errorf("User not found: %v", err)
 		ctx.JSON(http.StatusNotFound, gin.H{
@@ -59,11 +60,13 @@ func GetUserById(ctx *gin.Context) {
 		return
 	}
 
+	fmt.Println(user)
+
 	usersResponse := dto.UserDataResponse{
 		ID:       user.ID,
 		Email:    user.Email,
 		Username: user.Username,
-		Created:  user.Created.Format("2006-01-02 15:04:05"),
+		Created:  user.CreatedAt.Format("2006-01-02 15:04:05"),
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
