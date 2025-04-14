@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"os"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -18,14 +18,21 @@ func main() {
 	utils.InitLogger()
 
 	// Load environment variables
-	config.Init()
+	if err := config.Init(); err != nil {
+		utils.Log.Error("❌ Failed to load env", "error", err)
+		os.Exit(1)
+	}
+
 	utils.Log.Info("✅ Environment variables loaded successfully")
 
 	// Initialize Gin server
 	server := gin.Default()
 
 	// Connect to database
-	database.ConnectDB()
+	if err := database.ConnectDB(); err != nil {
+		utils.Log.Error("❌ Failed to connect to database", "error", err)
+		os.Exit(1)
+	}
 
 	// Middleware
 	server.Use(cors.New(cors.Config{
@@ -43,10 +50,10 @@ func main() {
 	routes.AuthRouter(api)
 	routes.UserRouter(api)
 
-	utils.Log.Infof("🚀 Server running on port %s", config.AppConfig.Port)
+	utils.Log.Info("🚀 Server is running", "port", config.AppConfig.Port)
 
 	if err := server.Run(":" + config.AppConfig.Port); err != nil {
-		log.Fatalf("❌ Failed to start server: %v", err)
+		utils.Log.Error("Failed to start server", "error", err)
 	}
 
 }
