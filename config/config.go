@@ -18,12 +18,12 @@ type Config struct {
 
 var AppConfig Config
 
-func Init() {
+func Init() error {
 
 	err := godotenv.Load()
 
 	if err != nil {
-		panic("Error loading .env file")
+		return err
 	}
 
 	AppConfig = Config{
@@ -36,4 +36,5 @@ func Init() {
 		JWT_SECRET:  os.Getenv("JWT_SECRET"),
 	}
 
+	return nil
 }
