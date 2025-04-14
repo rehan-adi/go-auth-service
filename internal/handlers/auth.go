@@ -16,7 +16,7 @@ func Signup(ctx *gin.Context) {
 	var data validators.SignupValidator
 
 	if err := ctx.ShouldBindJSON(&data); err != nil {
-		utils.Log.Errorf("Failed to bind request body: %v", err)
+		utils.Log.Error("Failed to bind request body", "error", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"error":   "Invalid request format",
@@ -40,7 +40,7 @@ func Signup(ctx *gin.Context) {
 	hashpassword, err := utils.HashPassword(data.Password)
 
 	if err != nil {
-		utils.Log.Errorf("Error hashing password: %v", err)
+		utils.Log.Error("Error hashing password", "error", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"error":   "Error hashing password",
@@ -57,7 +57,7 @@ func Signup(ctx *gin.Context) {
 	result := database.DB.Where("email = ?", user.Email).FirstOrCreate(&user)
 
 	if result.Error != nil {
-		utils.Log.Errorf("Failed to create user: %v", result.Error)
+		utils.Log.Error("Failed to create user", "error", result.Error)
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"error":   "Failed to register user",
@@ -85,7 +85,7 @@ func Signin(ctx *gin.Context) {
 	var data validators.SigninValidator
 
 	if err := ctx.ShouldBindJSON(&data); err != nil {
-		utils.Log.Errorf("Failed to bind request body: %v", err)
+		utils.Log.Error("Failed to bind request body", "error", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"error":   "Invalid request format",

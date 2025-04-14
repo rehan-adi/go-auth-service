@@ -19,7 +19,7 @@ func GetAllUsers(ctx *gin.Context) {
 
 	if err := database.DB.Select("id, username, email, created_at").
 		Find(&users).Error; err != nil {
-		utils.Log.Errorf("Failed to retrieve users: %v", err)
+		utils.Log.Error("Failed to retrieve users", "error", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"error":   "Failed to retrieve users",
@@ -52,7 +52,7 @@ func GetUserById(ctx *gin.Context) {
 
 	if err := database.DB.Select("id, email, username, created_at").Where("id = ?", id).
 		First(&user).Error; err != nil {
-		utils.Log.Errorf("User not found: %v", err)
+		utils.Log.Error("User not found", "error", err)
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"success": false,
 			"error":   "User not found",
