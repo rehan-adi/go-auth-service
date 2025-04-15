@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rehan-adi/go-auth-service/config"
 	"github.com/rehan-adi/go-auth-service/internal/database"
+	"github.com/rehan-adi/go-auth-service/internal/middlewares"
 	"github.com/rehan-adi/go-auth-service/internal/routes"
 	"github.com/rehan-adi/go-auth-service/internal/utils"
 )
@@ -42,6 +43,7 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
+	server.Use(middlewares.RateLimiterMiddleware())
 
 	api := server.Group("/api/v1")
 
