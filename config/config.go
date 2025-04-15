@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -27,14 +28,22 @@ func Init() error {
 	}
 
 	AppConfig = Config{
-		Port:        os.Getenv("PORT"),
-		DB_PORT:     os.Getenv("DB_PORT"),
-		DB_HOST:     os.Getenv("DB_HOST"),
-		DB_USER:     os.Getenv("DB_USER"),
-		DB_NAME:     os.Getenv("DB_NAME"),
-		DB_PASSWORD: os.Getenv("DB_PASSWORD"),
-		JWT_SECRET:  os.Getenv("JWT_SECRET"),
+		Port:        getEnvOrPanic("PORT"),
+		DB_PORT:     getEnvOrPanic("DB_PORT"),
+		DB_HOST:     getEnvOrPanic("DB_HOST"),
+		DB_USER:     getEnvOrPanic("DB_USER"),
+		DB_NAME:     getEnvOrPanic("DB_NAME"),
+		DB_PASSWORD: getEnvOrPanic("DB_PASSWORD"),
+		JWT_SECRET:  getEnvOrPanic("JWT_SECRET"),
 	}
 
 	return nil
+}
+
+func getEnvOrPanic(key string) string {
+	val := os.Getenv(key)
+	if val == "" {
+		panic(fmt.Sprintf("❌ Missing required environment variable: %s", key))
+	}
+	return val
 }
