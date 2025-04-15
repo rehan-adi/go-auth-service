@@ -29,13 +29,17 @@ func ConnectDB() error {
 	})
 
 	if err != nil {
-		return err
+		return fmt.Errorf("❌ Failed to open database (GORM connection setup): %w", err)
 	}
 
 	sqlDB, err := db.DB()
 
 	if err != nil {
-		return err
+		return fmt.Errorf("❌ Failed to get DB instance from GORM: %w", err)
+	}
+
+	if err := sqlDB.Ping(); err != nil {
+		return fmt.Errorf("❌ Failed to ping database: %w", err)
 	}
 
 	sqlDB.SetMaxOpenConns(25)
