@@ -1,8 +1,7 @@
 package main
 
 import (
-	"fmt"
-	"log"
+	"os"
 
 	"github.com/rehan-adi/go-auth-service/config"
 	"github.com/rehan-adi/go-auth-service/internal/database"
@@ -16,19 +15,26 @@ func RunMigrations() {
 	utils.InitLogger()
 
 	// Load env variables
-	config.Init()
+	if err := config.Init(); err != nil {
+		utils.Log.Error("❌ Failed to load env variables", "error", err)
+		os.Exit(1)
+	}
 
 	// Connect to database
-	database.ConnectDB()
+	if err := database.ConnectDB(); err != nil {
+		utils.Log.Error("❌ Failed to connect to the database", "error", err)
+		os.Exit(1)
+	}
 
 	// Run migration
 	err := database.DB.AutoMigrate(&models.User{})
 
 	if err != nil {
-		log.Fatalf("❌ Migration failed: %v", err)
+		utils.Log.Error("❌ Migration failed", "error", err)
+		os.Exit(1)
 	}
 
-	fmt.Println("✅ Database migration completed successfully")
+	utils.Log.Info("✅ Database migration completed successfully")
 }
 
 func main() {
