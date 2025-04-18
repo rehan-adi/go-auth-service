@@ -11,7 +11,7 @@ func UserRouter(router *gin.RouterGroup) {
 	{
 		user.GET("/", handlers.GetAllUsers)
 		user.GET("/:id", handlers.GetUserById)
-		user.PUT("/update", middlewares.AuthMiddleware(), handlers.UpdateUser)
+		user.PATCH("/update", middlewares.AuthMiddleware(), handlers.UpdateUser)
 		user.DELETE("/delete", middlewares.AuthMiddleware(), handlers.DeleteUser)
 	}
 }
