@@ -8,7 +8,7 @@ import (
 	"github.com/rehan-adi/go-auth-service/config"
 )
 
-func GenerateToken(userID int, email string) (string, error) {
+func GenerateToken(userID uint, email string) (string, error) {
 
 	payload := jwt.MapClaims{
 		"user_id": userID,
